@@ -7,6 +7,10 @@ import * as Chart from 'node_modules/chart.js/dist/Chart.js';
 import * as _ from 'lodash';
 import {NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
 
+import * as TMC from '../assets/tmc.json';
+
+
+
 interface Currency {
     Fecha: string;
     Valor:string;
@@ -171,6 +175,7 @@ export class AppComponent implements OnInit {
       let sumUfValues = 0;
       for(let i = 0 ; i< newValue.length; i++){
         oldValue['labels'].push(newValue[i]['Fecha']);
+        //maldita sbif api
         oldValue['data'].push(parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.')));
         sumUfValues+=oldValue['data'][i];
       }
