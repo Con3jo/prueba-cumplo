@@ -22,7 +22,7 @@ interface USDs{
 }
 
 const params = new HttpParams()
-    .set('apikey', 'f6c5ce74360b06e431f52145b91731f13f7f901f')
+    .set('apikey', 'aquivamiapikeydelasbif')
     .set('formato', "json");
 
 @Component({
@@ -224,7 +224,7 @@ export class AppComponent implements OnInit {
     this.ufChart['data']['datasets'][0]['data'] = this.ufChartInfo['data'];
     this.ufChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
     this.ufChart['data']['labels'] = this.ufChartInfo['labels'];
-    console.log(this.ufChart);
+    //console.log(this.ufChart);
 
     //this.ufChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
     let myLineChart = new Chart(this.ufChartElement, this.ufChart);
