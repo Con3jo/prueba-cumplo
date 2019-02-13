@@ -5,14 +5,20 @@ import {HttpParams, HttpClient, HttpErrorResponse} from "@angular/common/http";
 import * as Chart from 'node_modules/chart.js/dist/Chart.js';
 
 import * as _ from 'lodash';
-import {NgbDate, NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
+import {NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
 
-interface UF {
+interface Currency {
     Fecha: string;
     Valor:string;
 }
+
+//Estos los nombres los pude para que correspondieran con el json que envia la SBIF
 interface UFs{
-    UFs: UF[];
+    UFs: Currency[];
+}
+
+interface USDs{
+    Dolares: Currency[];
 }
 
 const params = new HttpParams()
@@ -25,22 +31,24 @@ const params = new HttpParams()
 })
 
 export class AppComponent implements OnInit {
-    ufValuesObs: Observable<any>;
+    ufValuesObs: Observable<UFs>;
     ufValues: any;
-    datesRange: Object;
-    ufChartElement: Element;
-    ufChart: Object;
     ufChartInfo: Object;
     ufMax: number;
     ufMin: number;
     ufAvg: number;
 
-    usdValuesObs: Observable<any>;
+    usdValuesObs: Observable<USDs>;
     usdValues: any;
     usdChartInfo: Object;
     usdMax: number;
     usdMin: number;
     usdAvg: number;
+
+
+    datesRange: Object;
+    ufChartElement: Element;
+    ufChart: Object;
 
 
   constructor(private http:HttpClient, private calendar: NgbCalendar) {
@@ -113,7 +121,13 @@ export class AppComponent implements OnInit {
     this.datesRange = dates;
     this.ufValuesObs = this.http
           .get("https://api.sbif.cl/api-sbifv3/recursos_api/uf/periodo/"+dates.from.year+"/"+dates.from.month+"/dias_i/"+dates.from.day+"/"+dates.to.year+"/"+dates.to.month+"/dias_f/"+dates.to.day,{params})
-          .do(console.log);
+          .do(console.log).
+          catch((err: HttpErrorResponse) => {
+            console.log(err);
+            this.ufValues=[];
+            return throwError(
+              'Something bad happened; please try again later.');
+          });
 
     this.usdValuesObs = this.http
           .get("https://api.sbif.cl/api-sbifv3/recursos_api/dolar/periodo/"+dates.from.year+"/"+dates.from.month+"/dias_i/"+dates.from.day+"/"+dates.to.year+"/"+dates.to.month+"/dias_f/"+dates.to.day,{params})
@@ -126,26 +140,49 @@ export class AppComponent implements OnInit {
           });
 
     this.ufValuesObs.subscribe(
-      value => this.ufValues = value.UFs.slice(),
+      value => {
+          console.log('subscribe UFs',value);
+          this.ufValues = value.UFs.slice()
+        },
       err => console.error("Error "+err),
       () => {
-          //console.log('Observer got a complete notification',this.ufValues); 
-          this.updateData(); 
+          this.updateCurrency(this.ufValues,this.ufChartInfo); 
           this.renderChart();
         }
     );
 
     this.usdValuesObs.subscribe(
-        value => this.usdValues = value.Dolares.slice(),
+        value => {
+            console.log('subscribe USDs',value);
+            this.ufValues = value.Dolares.slice()
+          },
         err => {console.error("Error "+err);this.usdValues=[];},
         () => {
-            //console.log('Observer got a complete notification',this.usdValues); 
-            this.updateData(); 
+            this.updateCurrency(this.usdValues,this.usdChartInfo); 
             this.renderChart();
         }
     );
   }
 
+  updateCurrency(newValue: any[], oldValue: any){
+    oldValue = {labels: [], data: []};
+    
+    if(newValue){
+      let sumUfValues = 0;
+      for(let i = 0 ; i< newValue.length; i++){
+        oldValue['labels'].push(newValue[i]['Fecha']);
+        oldValue['data'].push(parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.')));
+        sumUfValues+=oldValue['data'][i];
+      }
+      this.ufMax = Math.max(...oldValue['data']);
+      this.ufMin = Math.min(...oldValue['data']);
+      this.ufAvg = sumUfValues/oldValue.length;
+      //console.log(this.ufMax, this.ufMin, this.ufAvg);
+    }
+    
+  }
+
+  /*
   updateData(){
     this.ufChartInfo = {labels: [], data: []};
     this.usdChartInfo = {labels: [], data: []};
@@ -180,7 +217,7 @@ export class AppComponent implements OnInit {
     }
 
     //console.log(this.ufChartInfo, this.usdChartInfo);
-  }
+  }*/
 
   renderChart(){
     console.log('renderChart',this.ufChartInfo['labels']);
