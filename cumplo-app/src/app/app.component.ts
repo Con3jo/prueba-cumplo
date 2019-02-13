@@ -25,35 +25,88 @@ const params = new HttpParams()
 })
 
 export class AppComponent implements OnInit {
-  ufValuesObs: Observable<any>;
-  ufValues: any;
-  datesRange: Object;
-  ufChartElement: Element;
-  ufChartInfo: Object;
-  ufMax: number;
-  ufMin: number;
-  ufAvg: number;
+    ufValuesObs: Observable<any>;
+    ufValues: any;
+    datesRange: Object;
+    ufChartElement: Element;
+    ufChart: Object;
+    ufChartInfo: Object;
+    ufMax: number;
+    ufMin: number;
+    ufAvg: number;
 
-  usdValuesObs: Observable<any>;
-  usdValues: any;
-  usdChartInfo: Object;
-  usdMax: number;
-  usdMin: number;
-  usdAvg: number;
+    usdValuesObs: Observable<any>;
+    usdValues: any;
+    usdChartInfo: Object;
+    usdMax: number;
+    usdMin: number;
+    usdAvg: number;
 
 
   constructor(private http:HttpClient, private calendar: NgbCalendar) {
   }
 
-  ngOnInit() {
-      this.ufChartElement = document.getElementById("myProgrammaticallyChosenIndex");
-      this.ufValues = [];
-      this.ufChartInfo = {labels: [], data: []};
-      this.ufMax, this.ufMin, this.ufAvg = 0;
-      this.usdValues = [];
-      this.usdChartInfo = {labels: [], data: []};
-      this.usdMax, this.usdMin, this.usdAvg = 0;
-  }
+    ngOnInit() {
+        this.ufChartElement = document.getElementById("ufChart");
+        this.ufValues = [];
+        this.ufChartInfo = {labels: [], data: []};
+        this.ufMax = this.ufMin = this.ufAvg = 0;
+        this.usdValues = [];
+        this.usdChartInfo = {labels: [], data: []};
+        this.usdMax = this.usdMin = this.usdAvg = 0;
+
+
+        this.ufChart = {
+            type: 'line',
+            data:{
+                datasets:[
+                {
+                    label: "UF", 
+                    yAxisID: 'y-axis-1',
+                    borderColor: "#D25300",
+                    backgroundColor: "#D25300",
+                    fill: false,
+                    data: []
+                },
+                {
+                    label: "Dólar", 
+                    yAxisID: 'y-axis-2',
+                    borderColor: "#14BF00",
+                    backgroundColor: "#14BF00",
+                    fill: false,
+                    data: []
+                }
+                ],
+
+                labels: [],
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: true,
+                scales: {
+                    yAxes: [
+                        {
+                            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                            display: true,
+                            position: 'left',
+                            id: 'y-axis-1',
+                        }, 
+                        {
+                            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                            display: true,
+                            position: 'right',
+                            id: 'y-axis-2',
+                            gridLines: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    ],
+                },
+            }
+        };
+
+        let chart = new Chart(this.ufChartElement, this.ufChart);
+    }
 
   updateDatesRange(dates: any){
     console.log('change fechas:',dates);
@@ -75,87 +128,70 @@ export class AppComponent implements OnInit {
     this.ufValuesObs.subscribe(
       value => this.ufValues = value.UFs.slice(),
       err => console.error("Error "+err),
-      () => {console.log('Observer got a complete notification',this.ufValues); this.updateData(); this.renderChart();}
+      () => {
+          //console.log('Observer got a complete notification',this.ufValues); 
+          this.updateData(); 
+          this.renderChart();
+        }
     );
 
-
     this.usdValuesObs.subscribe(
-      value => this.usdValues = value.Dolares.slice(),
-      err => {console.error("Error "+err);this.usdValues=[];},
-      () => {console.log('Observer got a complete notification',this.usdValues); this.updateData(); this.renderChart();}
+        value => this.usdValues = value.Dolares.slice(),
+        err => {console.error("Error "+err);this.usdValues=[];},
+        () => {
+            //console.log('Observer got a complete notification',this.usdValues); 
+            this.updateData(); 
+            this.renderChart();
+        }
     );
   }
 
   updateData(){
-    //console.log("parseData", this.ufValues);
     this.ufChartInfo = {labels: [], data: []};
+    this.usdChartInfo = {labels: [], data: []};
+    
     if(this.ufValues){
+      let sumUfValues = 0;
       for(let i = 0 ; i< this.ufValues.length; i++){
-        //console.log(i,this.ufValues[i]);
         this.ufChartInfo['labels'].push(this.ufValues[i]['Fecha']);
         this.ufChartInfo['data'].push(parseFloat(this.ufValues[i]['Valor'].replace('.','').replace(',','.')));
+        sumUfValues+=this.ufChartInfo['data'][i];
       }
+      this.ufMax = Math.max(...this.ufChartInfo['data']);
+      this.ufMin = Math.min(...this.ufChartInfo['data']);
+      this.ufAvg = sumUfValues/this.ufValues.length;
+      //console.log(this.ufMax, this.ufMin, this.ufAvg);
     }
     if(this.usdValues){
+      let sumUsdValues = 0;
+
       for(let i = 0 ; i< this.usdValues.length; i++){
         //console.log(i,this.ufValues[i]);
         this.usdChartInfo['labels'].push(this.usdValues[i]['Fecha']);
         this.usdChartInfo['data'].push(parseFloat(this.usdValues[i]['Valor'].replace('.','').replace(',','.')));
+        sumUsdValues+=this.usdChartInfo['data'][i];
       }
+
+      this.usdMax = Math.max(...this.usdChartInfo['data']);
+      this.usdMin = Math.min(...this.usdChartInfo['data']);
+      this.usdAvg = sumUsdValues/this.usdValues.length;
+      //console.log(this.usdMax, this.usdMin, this.usdAvg);
+
     }
 
-    console.log(this.ufChartInfo, this.usdChartInfo);
-    return this.ufChartInfo;
+    //console.log(this.ufChartInfo, this.usdChartInfo);
   }
 
   renderChart(){
-    var ctx = document.getElementById("ufChart");
+    console.log('renderChart',this.ufChartInfo['labels']);
+    this.ufChart['data']['datasets'][0]['data'] = this.ufChartInfo['data'];
+    this.ufChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
+    this.ufChart['data']['labels'] = this.ufChartInfo['labels'];
+    console.log(this.ufChart);
 
-    let myLineChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: this.ufChartInfo['labels'],
-        datasets:[
-          {
-            label: "UF", yAxisID: 'y-axis-1',
-            data:this.ufChartInfo['data'],
-            borderColor: "#D25300",
-            backgroundColor: "#D25300",fill: false,
-
-          },
-          {
-            label: "Dólar", yAxisID: 'y-axis-2',
-            data:this.usdChartInfo['data'],
-            borderColor: "#14BF00",
-            backgroundColor: "#14BF00",fill: false,
-          }
-        ]
-      },
-      options: {
-        responsive: false,
-        maintainAspectRatio: true,
-        scales: {
-          yAxes: [{
-            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-            display: true,
-            position: 'left',
-            id: 'y-axis-1',
-          }, {
-            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-            display: true,
-            position: 'right',
-            id: 'y-axis-2',
-            gridLines: {
-              drawOnChartArea: false
-            }
-          }],
-        },
-      }
-    });
+    //this.ufChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
+    let myLineChart = new Chart(this.ufChartElement, this.ufChart);
   }
 
-  beetwenInterval(date, datesInterval){
-
-  }
 
 }
