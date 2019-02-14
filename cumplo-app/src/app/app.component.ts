@@ -6,6 +6,8 @@ import * as Chart from 'node_modules/chart.js/dist/Chart.js';
 
 import * as _ from 'lodash';
 import {NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
+import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+
 
 import * as TMC from '../assets/tmc.json';
 
@@ -45,6 +47,7 @@ const params = new HttpParams()
 })
 
 export class AppComponent implements OnInit {
+    faMoneyBillWave = faMoneyBillWave;
     ufValuesObs: Observable<UFs>;
     ufValues: any;
     ufChartInfo: Object;
@@ -290,12 +293,9 @@ export class AppComponent implements OnInit {
     //ahora los datos, una curva por tipo
     for(let i = 0; i<newValue.length; i++){
       let index = oldValue['type'].indexOf(newValue[i]['Tipo']);
-      //console.log(index,oldValue['data'][index]);
       oldValue['data'][index].push(newValue[i]['Valor']);
-      //console.log(oldValue['data'][index],oldValue['data']);console.log('---');
     }
     this.tmcChartInfo = JSON.parse(JSON.stringify(oldValue));
-    console.log(this.tmcChartInfo);
 
 
   }
@@ -306,7 +306,6 @@ export class AppComponent implements OnInit {
     this.currenciesChart['data']['datasets'][0]['data'] = this.ufChartInfo['data'];
     this.currenciesChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
     this.currenciesChart['data']['labels'] = this.ufChartInfo['labels'];
-    //console.log(this.currenciesChart);
 
     //this.currenciesChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
     let myLineChart = new Chart(this.currenciesChartElement, this.currenciesChart);
