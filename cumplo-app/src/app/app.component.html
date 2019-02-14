@@ -39,7 +39,15 @@
 
   </div>
   <div class="row">
-    <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
+      <div class="col-md-3">
+          <p>Pick a date interval to display</p>
+          <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
+      </div>
+      <div class="col-md-7">
+        <div class="row">
+        <canvas id="tmcChart" width="600" height="400"></canvas>
+        </div>
+      </div>
 
   </div>
 </div>

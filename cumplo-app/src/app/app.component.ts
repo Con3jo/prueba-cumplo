@@ -86,6 +86,9 @@ export class AppComponent implements OnInit {
         this.usdChartInfo = {labels: [], data: []};
         this.usdMax = this.usdMin = this.usdAvg = 0;
 
+        this.tmcValues = [];
+        this.tmcChartInfo = {labels: [], data: [], type: []};
+        this.tmcChartElement = document.getElementById("tmcChart");
 
         this.currenciesChart = {
             type: 'line',
@@ -136,7 +139,27 @@ export class AppComponent implements OnInit {
             }
         };
 
+
+        this.tmcChart = {
+          type: 'line',
+          data:{
+              datasets:[
+              {
+                  fill: false,
+                  data: []
+              },
+              ],
+
+              labels: [],
+          },
+          options: {
+              responsive: false,
+              maintainAspectRatio: true,
+          }
+      };
+
         let chart = new Chart(this.currenciesChartElement, this.currenciesChart);
+        let chartTmc = new Chart(this.tmcChartElement, this.tmcChart);
     }
 
   updateDatesRange(dates: any){
@@ -226,7 +249,36 @@ export class AppComponent implements OnInit {
           console.log('subscribe TMC',value);
           this.tmcValues = value.TMCs.slice()
 
-        });
+        },
+        err =>{console.error("Error "+err);this.tmcValues=[];},
+        () => {
+          this.updateTMC(this.tmcValues, this.tmcChartInfo);
+          this.renderChartTMC();
+        }
+      );
+
+  }
+
+  updateTMC(newValue: any[], oldValue: any){
+    oldValue = {labels: [], data: [], type:[]};
+    let maxValues = {};
+    console.log('updateTMC:',newValue);
+    if(newValue){
+      for(let i = 0 ; i< newValue.length; i++){
+        oldValue['labels'].push(newValue[i]['Fecha']);
+        oldValue['type'].push(newValue[i]['Tipo']);
+        oldValue['data'].push(parseFloat(newValue[i]['Valor']));
+
+        if(maxValues[newValue[i]['Tipo']]){
+          if(maxValues[newValue[i]['Tipo']]>oldValue['data'][i]) maxValues[newValue[i]['Tipo']]=oldValue['data'][i];
+        }else{
+          maxValues[newValue[i]['Tipo']] = oldValue['data'][i];
+        }
+        //maldita sbif api
+      }
+      //console.log(this.ufMax, this.ufMin, this.ufAvg);
+    }
+    console.log('updateTMC:', oldValue, maxValues);
 
   }
 
@@ -277,6 +329,19 @@ export class AppComponent implements OnInit {
     //this.currenciesChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
     let myLineChart = new Chart(this.currenciesChartElement, this.currenciesChart);
   }
+
+  renderChartTMC(){
+    console.log('renderChartTMC:', this.tmcChartInfo);
+    console.log('renderChartTMC',this.tmcChartInfo['labels']);
+    this.tmcChart['data']['datasets'][0]['data'] = this.tmcChartInfo['data'];
+    this.tmcChart['data']['labels'] = this.tmcChartInfo['labels'];
+    //console.log(this.currenciesChart);
+
+    //this.currenciesChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
+    let myLineChart = new Chart(this.tmcChartElement, this.tmcChart);
+
+  }
+
 
 
 }
