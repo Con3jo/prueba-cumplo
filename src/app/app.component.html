@@ -1,0 +1,56 @@
+
+<div class="container">
+  <h1>SBIF Indicators Charts</h1>
+  <div class="row">
+    <div class="col-md-12">
+        <h2>  <fa-icon [icon]="faMoneyBillWave"></fa-icon>          UF - USD</h2>
+    </div>
+    <div class="col-md-3">
+      <p>Pick a date interval to display</p>
+      <ngbd-datepicker-range (changeDate)="updateDatesRange($event)"></ngbd-datepicker-range>
+      <!--<ul *ngIf="ufValuesObs$ | async as ufValuesObs$ else noData">
+        <li *ngFor="let ufValue of ufValuesObs">
+            {{ufValue.Fecha}}
+        </li> 
+      </ul>-->
+    </div>
+    <div class="col-md-7">
+      <div class="row">
+      <canvas id="currenciesChart" width="600" height="400"></canvas>
+      </div>
+    </div>
+    <div class="col-md-2">
+        <h3>Statistics</h3>
+        <div class="col-md-12">
+          <h4>UF</h4>
+          Avg: {{ufAvg}}<br>
+          Max: {{ufMax}}<br>
+          Min: {{ufMin}}
+        </div>
+        <br>
+        <div class="col-md-12">
+            <h4>USD</h4>
+            Avg: {{usdAvg}}<br>
+            Max: {{usdMax}}<br>
+            Min: {{usdMin}}
+
+        </div>
+      </div>
+
+  </div>
+  <div class="row">
+      <div class="col-md-3">
+          <p>Pick a date interval to display</p>
+          <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
+      </div>
+      <div class="col-md-7">
+        <div class="row">
+        <canvas id="tmcChart" width="600" height="400"></canvas>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+<ng-template #noData>Sin datos disponibles</ng-template>
+<router-outlet></router-outlet>
