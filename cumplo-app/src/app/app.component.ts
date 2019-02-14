@@ -24,9 +24,19 @@ interface UFs{
 interface USDs{
     Dolares: Currency[];
 }
+interface TMC {
+  Titulo: string;
+  SubTitulo: string;
+  Valor: string;
+  Fecha: string;
+  Tipo: string;
+}
 
+interface TMCs{
+  TMCs: TMC[];
+}
 const params = new HttpParams()
-    .set('apikey', 'aquivamiapikeydelasbif')
+    .set('apikey', 'f6c5ce74360b06e431f52145b91731f13f7f901f')
     .set('formato', "json");
 
 @Component({
@@ -37,7 +47,7 @@ const params = new HttpParams()
 export class AppComponent implements OnInit {
     ufValuesObs: Observable<UFs>;
     ufValues: any;
-    ufChartInfo: Object;
+    currenciesChartInfo: Object;
     ufMax: number;
     ufMin: number;
     ufAvg: number;
@@ -51,24 +61,33 @@ export class AppComponent implements OnInit {
 
 
     datesRange: Object;
-    ufChartElement: Element;
-    ufChart: Object;
+    currenciesChartElement: Element;
+    currenciesChart: Object;
+
+
+    tmcValuesObs: Observable<TMCs>;
+    tmcValues: any;
+    tmcChartInfo: Object;
+
+    tmcDatesRange: Object;
+    tmcChartElement: Element;
+    tmcChart: Object;
 
 
   constructor(private http:HttpClient, private calendar: NgbCalendar) {
   }
 
     ngOnInit() {
-        this.ufChartElement = document.getElementById("ufChart");
+        this.currenciesChartElement = document.getElementById("currenciesChart");
         this.ufValues = [];
-        this.ufChartInfo = {labels: [], data: []};
+        this.currenciesChartInfo = {labels: [], data: []};
         this.ufMax = this.ufMin = this.ufAvg = 0;
         this.usdValues = [];
         this.usdChartInfo = {labels: [], data: []};
         this.usdMax = this.usdMin = this.usdAvg = 0;
 
 
-        this.ufChart = {
+        this.currenciesChart = {
             type: 'line',
             data:{
                 datasets:[
@@ -117,7 +136,7 @@ export class AppComponent implements OnInit {
             }
         };
 
-        let chart = new Chart(this.ufChartElement, this.ufChart);
+        let chart = new Chart(this.currenciesChartElement, this.currenciesChart);
     }
 
   updateDatesRange(dates: any){
@@ -150,7 +169,7 @@ export class AppComponent implements OnInit {
         },
       err => console.error("Error "+err),
       () => {
-          this.updateCurrency(this.ufValues,this.ufChartInfo); 
+          this.updateCurrency(this.ufValues,this.currenciesChartInfo); 
           this.renderChart();
         }
     );
@@ -187,20 +206,44 @@ export class AppComponent implements OnInit {
     
   }
 
+  updateDatesRangeTMC(dates: any){
+    //https://api.sbif.cl/api-sbifv3/recursos_api/tmc/posteriores/2013/01?apikey=SBIF9990SBIF44b7SBIF7f4c5a537d02358e1099&formato=xml
+
+    console.log('change fechas TMC:',dates);
+    this.tmcDatesRange = dates;
+    this.tmcValuesObs = this.http
+          .get("https://api.sbif.cl/api-sbifv3/recursos_api/tmc/periodo/"+dates.from.year+"/"+dates.from.month+"/"+dates.to.year+"/"+dates.to.month,{params})
+          .do(console.log).
+          catch((err: HttpErrorResponse) => {
+            console.log(err);
+            this.tmcValues=[];
+            return throwError(
+              'Something bad happened; please try again later.');
+          });
+
+    this.tmcValuesObs.subscribe(
+      value => {
+          console.log('subscribe TMC',value);
+          this.tmcValues = value.TMCs.slice()
+
+        });
+
+  }
+
   /*
   updateData(){
-    this.ufChartInfo = {labels: [], data: []};
+    this.currenciesChartInfo = {labels: [], data: []};
     this.usdChartInfo = {labels: [], data: []};
     
     if(this.ufValues){
       let sumUfValues = 0;
       for(let i = 0 ; i< this.ufValues.length; i++){
-        this.ufChartInfo['labels'].push(this.ufValues[i]['Fecha']);
-        this.ufChartInfo['data'].push(parseFloat(this.ufValues[i]['Valor'].replace('.','').replace(',','.')));
-        sumUfValues+=this.ufChartInfo['data'][i];
+        this.currenciesChartInfo['labels'].push(this.ufValues[i]['Fecha']);
+        this.currenciesChartInfo['data'].push(parseFloat(this.ufValues[i]['Valor'].replace('.','').replace(',','.')));
+        sumUfValues+=this.currenciesChartInfo['data'][i];
       }
-      this.ufMax = Math.max(...this.ufChartInfo['data']);
-      this.ufMin = Math.min(...this.ufChartInfo['data']);
+      this.ufMax = Math.max(...this.currenciesChartInfo['data']);
+      this.ufMin = Math.min(...this.currenciesChartInfo['data']);
       this.ufAvg = sumUfValues/this.ufValues.length;
       //console.log(this.ufMax, this.ufMin, this.ufAvg);
     }
@@ -221,18 +264,18 @@ export class AppComponent implements OnInit {
 
     }
 
-    //console.log(this.ufChartInfo, this.usdChartInfo);
+    //console.log(this.currenciesChartInfo, this.usdChartInfo);
   }*/
 
   renderChart(){
-    console.log('renderChart',this.ufChartInfo['labels']);
-    this.ufChart['data']['datasets'][0]['data'] = this.ufChartInfo['data'];
-    this.ufChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
-    this.ufChart['data']['labels'] = this.ufChartInfo['labels'];
-    //console.log(this.ufChart);
+    console.log('renderChart',this.currenciesChartInfo['labels']);
+    this.currenciesChart['data']['datasets'][0]['data'] = this.currenciesChartInfo['data'];
+    this.currenciesChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
+    this.currenciesChart['data']['labels'] = this.currenciesChartInfo['labels'];
+    //console.log(this.currenciesChart);
 
-    //this.ufChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
-    let myLineChart = new Chart(this.ufChartElement, this.ufChart);
+    //this.currenciesChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
+    let myLineChart = new Chart(this.currenciesChartElement, this.currenciesChart);
   }
 
 

@@ -16,7 +16,7 @@
     </div>
     <div class="col-md-7">
       <div class="row">
-      <canvas id="ufChart" width="600" height="400"></canvas>
+      <canvas id="currenciesChart" width="600" height="400"></canvas>
       </div>
     </div>
     <div class="col-md-2">
@@ -36,6 +36,10 @@
 
         </div>
       </div>
+
+  </div>
+  <div class="row">
+    <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
 
   </div>
 </div>
