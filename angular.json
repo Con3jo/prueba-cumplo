@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "cumplo-app": {
+    "prueba-cumplo": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/cumplo-app",
+            "outputPath": "dist/prueba-cumplo",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -63,18 +63,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "cumplo-app:build"
+            "browserTarget": "prueba-cumplo:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "cumplo-app:build:production"
+              "browserTarget": "prueba-cumplo:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "cumplo-app:build"
+            "browserTarget": "prueba-cumplo:build"
           }
         },
         "test": {
@@ -108,7 +108,7 @@
         }
       }
     },
-    "cumplo-app-e2e": {
+    "prueba-cumplo-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "prefix": "",
@@ -117,11 +117,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "cumplo-app:serve"
+            "devServerTarget": "prueba-cumplo:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "cumplo-app:serve:production"
+              "devServerTarget": "prueba-cumplo:serve:production"
             }
           }
         },
@@ -137,5 +137,5 @@
       }
     }
   },
-  "defaultProject": "cumplo-app"
+  "defaultProject": "prueba-cumplo"
 }
