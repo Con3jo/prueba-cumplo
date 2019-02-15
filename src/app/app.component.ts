@@ -253,11 +253,11 @@ export class AppComponent implements OnInit {
       if(type=="usd"){
         this.ufMax = Math.max(...currentValue['data']);
         this.ufMin = Math.min(...currentValue['data']);
-        this.ufAvg = sumUfValues/currentValue['data'].length;
+        this.ufAvg = parseFloat((sumUfValues/currentValue['data'].length).toFixed(2));
       }else{
         this.usdMax = Math.max(...currentValue['data']);
         this.usdMin = Math.min(...currentValue['data']);
-        this.usdAvg = sumUfValues/currentValue['data'].length;
+        this.usdAvg = parseFloat((sumUfValues/currentValue['data'].length).toFixed(2));
 
       }
     }
