@@ -94,10 +94,10 @@ export class AppComponent implements OnInit {
         this.tmcTypes= TMCtypes.default;
         this.currenciesChartElement = document.getElementById("currenciesChart");
         this.ufValues = [];
-        this.ufChartInfo = {labels: [], data: []};
+        this.ufChartInfo = {data: []};
         this.ufMax = this.ufMin = this.ufAvg = 0;
         this.usdValues = [];
-        this.usdChartInfo = {labels: [], data: []};
+        this.usdChartInfo = {data: []};
         this.usdMax = this.usdMin = this.usdAvg = 0;
 
         this.tmcValues = [];
@@ -244,20 +244,22 @@ export class AppComponent implements OnInit {
     //console.log('update:',newValue);
     if(newValue){
       let sumUfValues = 0;
+      let numericValues = []
       for(let i = 0 ; i< newValue.length; i++){
         currentValue['labels'].push(newValue[i]['Fecha']);
         //maldita sbif api
-        currentValue['data'].push(parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.')));
-        sumUfValues+=currentValue['data'][i];
+        currentValue['data'].push({x:newValue[i]['Fecha'],y:parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.'))});
+        sumUfValues+=currentValue['data'][i].y;
+        numericValues.push(currentValue['data'][i].y)
       }
       if(type=="usd"){
-        this.ufMax = Math.max(...currentValue['data']);
-        this.ufMin = Math.min(...currentValue['data']);
-        this.ufAvg = parseFloat((sumUfValues/currentValue['data'].length).toFixed(2));
+        this.ufMax = Math.max(...numericValues);
+        this.ufMin = Math.min(...numericValues);
+        this.ufAvg = parseFloat((sumUfValues/numericValues.length).toFixed(2));
       }else{
-        this.usdMax = Math.max(...currentValue['data']);
-        this.usdMin = Math.min(...currentValue['data']);
-        this.usdAvg = parseFloat((sumUfValues/currentValue['data'].length).toFixed(2));
+        this.usdMax = Math.max(...numericValues);
+        this.usdMin = Math.min(...numericValues);
+        this.usdAvg = parseFloat((sumUfValues/numericValues.length).toFixed(2));
 
       }
     }
@@ -314,20 +316,18 @@ export class AppComponent implements OnInit {
       allValuesByType.push({type: newValue[i]['Tipo'], value: parseFloat(newValue[i]['Valor']), label: newValue[i]['Fecha']});
 
     }
-    console.log("allValuesByType",allValuesByType);
     this.tmcMaxValues = [];
     for(let i = 0; i < currentValue.type.length; i++){
 
       let valuesType = allValuesByType.filter( valueType => valueType.type === currentValue.type[i] );
-      console.log('valuesType',valuesType);
       //let valueMax = Math.max.apply(Math, valuesType.map( x => x.value));
-      var maxid = valuesType[0].value;
+      var maxV = valuesType[0].value;
       let valueMax =  valuesType[0];
       valuesType.map((obj)=>{  
-        console.log(obj.value,'>', maxid);
-        if (obj.value > maxid) valueMax = obj;    
+        //console.log(obj.value,'>', maxV);
+        if (obj.value > maxV) valueMax = obj;    
       });
-      console.log('valueMax',valueMax);
+      //console.log('valueMax',valueMax);
       this.tmcMaxValues.push({x:valueMax.label,y:valueMax.value});
       
     }
@@ -354,6 +354,8 @@ export class AppComponent implements OnInit {
     this.currenciesChart['data']['labels'] = this.ufChartInfo['labels'];
 
     //this.currenciesChart['data']['datasets'][1]['labels'] = this.usdChartInfo['labels'];
+    console.log(this.currenciesChart)
+    
     let myLineChart = new Chart(this.currenciesChartElement, this.currenciesChart);
   }
 
