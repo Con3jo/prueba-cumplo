@@ -1,12 +1,17 @@
 
+<nav class="navbar navbar-default navbar-fixed-top header-cumplo">
+  <div class="container">
+
+    <h1>SBIF Indicators Charts</h1>
+  </div>
+</nav>
 <div class="container">
-  <h1>SBIF Indicators Charts</h1>
   <div class="row">
     <div class="col-md-12">
-        <h2>  <fa-icon [icon]="faMoneyBillWave"></fa-icon>          UF - USD</h2>
+        <h2>  <fa-icon [icon]="faMoneyBillWave"></fa-icon>UF - USD</h2>
     </div>
     <div class="col-md-3">
-      <p>Pick a date interval to display</p>
+      <p>Pick a date range to display</p>
       <ngbd-datepicker-range (changeDate)="updateDatesRange($event)"></ngbd-datepicker-range>
       <!--<ul *ngIf="ufValuesObs$ | async as ufValuesObs$ else noData">
         <li *ngFor="let ufValue of ufValuesObs">
@@ -23,24 +28,31 @@
         <h3>Statistics</h3>
         <div class="col-md-12">
           <h4>UF</h4>
-          Avg: {{ufAvg}}<br>
-          Max: {{ufMax}}<br>
-          Min: {{ufMin}}
+          <ul class="list-group">
+          <li class="list-group-item">Avg: {{ufAvg}}</li>
+          <li class="list-group-item">Max: {{ufMax}}</li>
+          <li class="list-group-item">Min: {{ufMin}}</li>
+        </ul>
         </div>
         <br>
         <div class="col-md-12">
             <h4>USD</h4>
-            Avg: {{usdAvg}}<br>
-            Max: {{usdMax}}<br>
-            Min: {{usdMin}}
+            <ul class="list-group">
+              <li class="list-group-item">Avg: {{usdAvg}}</li>
+              <li class="list-group-item">Max: {{usdMax}}</li>
+              <li class="list-group-item">Min: {{usdMin}}</li>
+            </ul>
 
         </div>
       </div>
 
   </div>
   <div class="row">
+    <div class="col-md-12">
+        <h2>  <fa-icon [icon]="faChartLine"></fa-icon> TMC</h2>
+    </div>
       <div class="col-md-3">
-          <p>Pick a date interval to display</p>
+          <p>Pick a date range to display</p>
           <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
       </div>
       <div class="col-md-7">

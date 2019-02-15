@@ -6,10 +6,10 @@ import * as Chart from 'node_modules/chart.js/dist/Chart.js';
 
 import * as _ from 'lodash';
 import {NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
-import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faChartLine, faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 
-import * as TMC from '../assets/tmc.json';
+import * as TMCtypes from '../assets/tmc.json';
 
 
 
@@ -43,11 +43,16 @@ const params = new HttpParams()
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html'
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
 })
 
 export class AppComponent implements OnInit {
+    //FontAwesome :)
     faMoneyBillWave = faMoneyBillWave;
+    faChartLine = faChartLine;
+    faChartBar = faChartBar;
+
     ufValuesObs: Observable<UFs>;
     ufValues: any;
     ufChartInfo: Object;
@@ -127,17 +132,32 @@ export class AppComponent implements OnInit {
                             display: true,
                             position: 'left',
                             id: 'y-axis-1',
+                            scaleLabel:{
+                              display: true,
+                              labelString: 'CLP'
+                            },
                         }, 
                         {
                             type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                             display: true,
                             position: 'right',
                             id: 'y-axis-2',
+                            scaleLabel:{
+                              display: true,
+                              labelString: 'CLP'
+                            },
                             gridLines: {
                                 drawOnChartArea: false
                             }
                         }
                     ],
+                    xAxes:[{
+                      scaleLabel:{
+                        display: true,
+                        labelString: 'Fechas'
+                      },
+
+                    }]
                 },
             }
         };
@@ -185,7 +205,7 @@ export class AppComponent implements OnInit {
             console.log(err);
             this.usdValues=[];
             return throwError(
-              'Something bad happened; please try again later.');
+              'Error!');
           });
 
     this.ufValuesObs.subscribe(
@@ -195,7 +215,7 @@ export class AppComponent implements OnInit {
         },
       err => console.error("Error "+err),
       () => {
-          this.updateCurrency('uf',this.ufValues,this.ufChartInfo); 
+          this.updateCurrency('uf',this.ufValues); 
           this.renderChart();
         }
     );
@@ -207,42 +227,46 @@ export class AppComponent implements OnInit {
           },
         err => {console.error("Error "+err);this.usdValues=[];},
         () => {
-            this.updateCurrency('usd',this.usdValues,this.usdChartInfo); 
+            this.updateCurrency('usd',this.usdValues); 
             this.renderChart();
         }
     );
   }
 
-  updateCurrency(type: string, newValue: any[], oldValue: any){
-    oldValue = {labels: [], data: []};
+  updateCurrency(type: string, newValue: any[]){
+    let currentValue = {labels: [], data: []};
     console.log('update:',newValue);
     if(newValue){
       let sumUfValues = 0;
       for(let i = 0 ; i< newValue.length; i++){
-        oldValue['labels'].push(newValue[i]['Fecha']);
+        currentValue['labels'].push(newValue[i]['Fecha']);
         //maldita sbif api
-        oldValue['data'].push(parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.')));
-        sumUfValues+=oldValue['data'][i];
+        currentValue['data'].push(parseFloat(newValue[i]['Valor'].replace('.','').replace(',','.')));
+        sumUfValues+=currentValue['data'][i];
       }
-      this.ufMax = Math.max(...oldValue['data']);
-      this.ufMin = Math.min(...oldValue['data']);
-      this.ufAvg = sumUfValues/oldValue.length;
-      //console.log(this.ufMax, this.ufMin, this.ufAvg);
+      if(type=="usd"){
+        this.ufMax = Math.max(...currentValue['data']);
+        this.ufMin = Math.min(...currentValue['data']);
+        this.ufAvg = sumUfValues/currentValue['data'].length;
+      }else{
+        this.usdMax = Math.max(...currentValue['data']);
+        this.usdMin = Math.min(...currentValue['data']);
+        this.usdAvg = sumUfValues/currentValue['data'].length;
+
+      }
     }
     
     if(type=="usd"){
-      this.usdChartInfo = JSON.parse(JSON.stringify(oldValue));
+      this.usdChartInfo = JSON.parse(JSON.stringify(currentValue));
     }else{
-      this.ufChartInfo = JSON.parse(JSON.stringify(oldValue));
+      this.ufChartInfo = JSON.parse(JSON.stringify(currentValue));
     }
     
-    console.log('updatecurrency',oldValue);
+    console.log('updatecurrency',currentValue);
     
   }
 
   updateDatesRangeTMC(dates: any){
-    //https://api.sbif.cl/api-sbifv3/recursos_api/tmc/posteriores/2013/01?apikey=SBIF9990SBIF44b7SBIF7f4c5a537d02358e1099&formato=xml
-
     console.log('change fechas TMC:',dates);
     this.tmcDatesRange = dates;
     this.tmcValuesObs = this.http
@@ -252,14 +276,13 @@ export class AppComponent implements OnInit {
             console.log(err);
             this.tmcValues=[];
             return throwError(
-              'Something bad happened; please try again later.');
+              'Error!');
           });
 
     this.tmcValuesObs.subscribe(
       value => {
           console.log('subscribe TMC',value);
           this.tmcValues = value.TMCs.slice()
-
         },
         err =>{console.error("Error "+err);this.tmcValues=[];},
         () => {
