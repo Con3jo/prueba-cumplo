@@ -252,7 +252,7 @@ export class AppComponent implements OnInit {
         sumUfValues+=currentValue['data'][i].y;
         numericValues.push(currentValue['data'][i].y)
       }
-      if(type=="usd"){
+      if(type=="uf"){
         this.ufMax = Math.max(...numericValues);
         this.ufMin = Math.min(...numericValues);
         this.ufAvg = parseFloat((sumUfValues/numericValues.length).toFixed(2));
