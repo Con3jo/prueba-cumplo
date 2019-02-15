@@ -90,7 +90,7 @@ export class AppComponent implements OnInit {
   }
 
     ngOnInit() {
-      console.log(TMCtypes.default);
+      //console.log(TMCtypes.default);
         this.tmcTypes= TMCtypes.default;
         this.currenciesChartElement = document.getElementById("currenciesChart");
         this.ufValues = [];
@@ -141,7 +141,7 @@ export class AppComponent implements OnInit {
                             id: 'y-axis-1',
                             scaleLabel:{
                               display: true,
-                              labelString: 'CLP'
+                              labelString: 'UF [CLP]'
                             },
                         }, 
                         {
@@ -151,7 +151,7 @@ export class AppComponent implements OnInit {
                             id: 'y-axis-2',
                             scaleLabel:{
                               display: true,
-                              labelString: 'CLP'
+                              labelString: 'USD [CLP]'
                             },
                             gridLines: {
                                 drawOnChartArea: false
@@ -194,7 +194,7 @@ export class AppComponent implements OnInit {
     }
 
   updateDatesRange(dates: any){
-    console.log('change fechas:',dates);
+    //console.log('change fechas:',dates);
     this.datesRange = dates;
     this.ufValuesObs = this.http
           .get("https://api.sbif.cl/api-sbifv3/recursos_api/uf/periodo/"+dates.from.year+"/"+dates.from.month+"/dias_i/"+dates.from.day+"/"+dates.to.year+"/"+dates.to.month+"/dias_f/"+dates.to.day,{params})
@@ -218,7 +218,6 @@ export class AppComponent implements OnInit {
 
     this.ufValuesObs.subscribe(
       value => {
-          console.log('subscribe UFs',value);
           this.ufValues = value.UFs.slice()
         },
       err => console.error("Error "+err),
@@ -230,7 +229,6 @@ export class AppComponent implements OnInit {
 
     this.usdValuesObs.subscribe(
         value => {
-            console.log('subscribe USDs',value);
             this.usdValues = value.Dolares.slice()
           },
         err => {console.error("Error "+err);this.usdValues=[];},
@@ -243,7 +241,7 @@ export class AppComponent implements OnInit {
 
   updateCurrency(type: string, newValue: any[]){
     let currentValue = {labels: [], data: []};
-    console.log('update:',newValue);
+    //console.log('update:',newValue);
     if(newValue){
       let sumUfValues = 0;
       for(let i = 0 ; i< newValue.length; i++){
@@ -289,7 +287,6 @@ export class AppComponent implements OnInit {
 
     this.tmcValuesObs.subscribe(
       value => {
-          console.log('subscribe TMC',value);
           this.tmcValues = value.TMCs.slice()
         },
         err =>{console.error("Error "+err);this.tmcValues=[];},
@@ -305,7 +302,7 @@ export class AppComponent implements OnInit {
   updateTMC(newValue: any[]){
     let currentValue = {labels: [], data: [], type:[]};
     let allValuesByType = [];
-    console.log("updateTMC",newValue, currentValue);
+    //console.log("updateTMC",newValue, currentValue);
 
     //usamos las fechas de label, eje x (suponemos que vienen ordenadas xD)
     //y aprovechamos el for para sacar los tipos
@@ -314,16 +311,24 @@ export class AppComponent implements OnInit {
       if(currentValue.labels.indexOf(newValue[i]['Fecha'])<0) currentValue.labels.push(newValue[i]['Fecha']);
       if(currentValue.type.indexOf(newValue[i]['Tipo'])<0) currentValue.type.push(newValue[i]['Tipo']);
 
-      allValuesByType.push({type: newValue[i]['Tipo'], value: newValue[i]['Valor']});
+      allValuesByType.push({type: newValue[i]['Tipo'], value: parseFloat(newValue[i]['Valor']), label: newValue[i]['Fecha']});
 
     }
+    console.log("allValuesByType",allValuesByType);
     this.tmcMaxValues = [];
     for(let i = 0; i < currentValue.type.length; i++){
+
       let valuesType = allValuesByType.filter( valueType => valueType.type === currentValue.type[i] );
       console.log('valuesType',valuesType);
-      let valueMax = Math.max.apply(Math, valuesType.map( x => x.value));
-      console.log(valueMax);
-      this.tmcMaxValues.push({x:valuesType[0].type,y:valueMax});
+      //let valueMax = Math.max.apply(Math, valuesType.map( x => x.value));
+      var maxid = valuesType[0].value;
+      let valueMax =  valuesType[0];
+      valuesType.map((obj)=>{  
+        console.log(obj.value,'>', maxid);
+        if (obj.value > maxid) valueMax = obj;    
+      });
+      console.log('valueMax',valueMax);
+      this.tmcMaxValues.push({x:valueMax.label,y:valueMax.value});
       
     }
     console.log('maxValuesByType', this.tmcMaxValues);
@@ -368,10 +373,16 @@ export class AppComponent implements OnInit {
       };
      
     }
-    this.tmcChart['data']['datasets'].push([]);
-    this.tmcChart['data']['datasets'][this.tmcChartInfo['type'].length] = {
+    this.tmcChart['data']['datasets'].unshift([]);
+    this.tmcChart['data']['datasets'][0] = {
       data: this.tmcMaxValues,
-      label: 'Max values'
+      label: 'Max values',
+      pointStyle: 'triangle',
+      backgroundColor: '#000',
+      borderColor: '#000',
+      fill: false,
+      showLine: false,
+      pointRadius: 5
     };
     this.tmcChart['data']['labels'] = this.tmcChartInfo['labels'];
 
