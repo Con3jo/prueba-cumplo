@@ -363,6 +363,8 @@ export class AppComponent implements OnInit {
         data: this.tmcChartInfo['data'][i],
         label: this.tmcChartInfo['type'][i],//+ TMCtypes.default.find( tmc => tmc.id ===  this.tmcChartInfo['type'][i]).description, 
         fill: false,
+        borderColor: TMCtypes.default.find( tmc => tmc.id ===  this.tmcChartInfo['type'][i]).color,
+        backgroundColor: TMCtypes.default.find( tmc => tmc.id ===  this.tmcChartInfo['type'][i]).color,
       };
      
     }
