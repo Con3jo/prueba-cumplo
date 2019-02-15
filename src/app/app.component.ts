@@ -41,6 +41,7 @@ const params = new HttpParams()
     .set('apikey', 'f6c5ce74360b06e431f52145b91731f13f7f901f')
     .set('formato', "json");
 
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -48,6 +49,8 @@ const params = new HttpParams()
 })
 
 export class AppComponent implements OnInit {
+    tmcTypes: any[];
+
     //FontAwesome :)
     faMoneyBillWave = faMoneyBillWave;
     faChartLine = faChartLine;
@@ -80,12 +83,15 @@ export class AppComponent implements OnInit {
     tmcDatesRange: Object;
     tmcChartElement: Element;
     tmcChart: Object;
+    tmcMaxValues: any[];
 
 
   constructor(private http:HttpClient, private calendar: NgbCalendar) {
   }
 
     ngOnInit() {
+      console.log(TMCtypes.default);
+        this.tmcTypes= TMCtypes.default;
         this.currenciesChartElement = document.getElementById("currenciesChart");
         this.ufValues = [];
         this.ufChartInfo = {labels: [], data: []};
@@ -97,6 +103,7 @@ export class AppComponent implements OnInit {
         this.tmcValues = [];
         this.tmcChartInfo = {labels: [], data: [], type: []};
         this.tmcChartElement = document.getElementById("tmcChart");
+        this.tmcMaxValues = [];
 
         this.currenciesChart = {
             type: 'line',
@@ -178,6 +185,7 @@ export class AppComponent implements OnInit {
           options: {
               responsive: false,
               maintainAspectRatio: true,
+              legend: {position: 'bottom'}
           }
       };
 
@@ -216,7 +224,7 @@ export class AppComponent implements OnInit {
       err => console.error("Error "+err),
       () => {
           this.updateCurrency('uf',this.ufValues); 
-          this.renderChart();
+          this.renderChartCurrencies();
         }
     );
 
@@ -228,7 +236,7 @@ export class AppComponent implements OnInit {
         err => {console.error("Error "+err);this.usdValues=[];},
         () => {
             this.updateCurrency('usd',this.usdValues); 
-            this.renderChart();
+            this.renderChartCurrencies();
         }
     );
   }
@@ -295,36 +303,46 @@ export class AppComponent implements OnInit {
 
   //funciona un poco diferente a los otros, asi que otra función
   updateTMC(newValue: any[]){
-    let oldValue = {labels: [], data: [], type:[]};
-    console.log("updateTMC",newValue, oldValue);
+    let currentValue = {labels: [], data: [], type:[]};
+    let allValuesByType = [];
+    console.log("updateTMC",newValue, currentValue);
 
     //usamos las fechas de label, eje x (suponemos que vienen ordenadas xD)
     //y aprovechamos el for para sacar los tipos
     
     for(let i = 0; i<newValue.length; i++){
-      if(oldValue.labels.indexOf(newValue[i]['Fecha'])<0) oldValue.labels.push(newValue[i]['Fecha']);
-      if(oldValue.type.indexOf(newValue[i]['Tipo'])<0) oldValue.type.push(newValue[i]['Tipo']);
+      if(currentValue.labels.indexOf(newValue[i]['Fecha'])<0) currentValue.labels.push(newValue[i]['Fecha']);
+      if(currentValue.type.indexOf(newValue[i]['Tipo'])<0) currentValue.type.push(newValue[i]['Tipo']);
+
+      allValuesByType.push({type: newValue[i]['Tipo'], value: newValue[i]['Valor']});
 
     }
+    this.tmcMaxValues = [];
+    for(let i = 0; i < currentValue.type.length; i++){
+      let valuesType = allValuesByType.filter( valueType => valueType.type === currentValue.type[i] );
+      console.log('valuesType',valuesType);
+      let valueMax = Math.max.apply(Math, valuesType.map( x => x.value));
+      console.log(valueMax);
+      this.tmcMaxValues.push({x:valuesType[0].type,y:valueMax});
+      
+    }
+    console.log('maxValuesByType', this.tmcMaxValues);
 
-    oldValue.type.sort((a,b)=>(a>b)?1:-1);
+    currentValue.type.sort((a,b)=>(a>b)?1:-1);
     
-    for(let i = 0; i<oldValue['type'].length; i++){
-      oldValue['data'].push([]);
+    for(let i = 0; i<currentValue['type'].length; i++){
+      currentValue['data'].push([]);
     }
     
     //ahora los datos, una curva por tipo
     for(let i = 0; i<newValue.length; i++){
-      let index = oldValue['type'].indexOf(newValue[i]['Tipo']);
-      oldValue['data'][index].push(newValue[i]['Valor']);
+      let index = currentValue['type'].indexOf(newValue[i]['Tipo']);
+      currentValue['data'][index].push(newValue[i]['Valor']);
     }
-    this.tmcChartInfo = JSON.parse(JSON.stringify(oldValue));
-
-
+    this.tmcChartInfo = JSON.parse(JSON.stringify(currentValue));
   }
 
-
-  renderChart(){
+  renderChartCurrencies(){
     console.log('renderChart',this.ufChartInfo,this.usdChartInfo);
     this.currenciesChart['data']['datasets'][0]['data'] = this.ufChartInfo['data'];
     this.currenciesChart['data']['datasets'][1]['data'] = this.usdChartInfo['data'];
@@ -335,16 +353,24 @@ export class AppComponent implements OnInit {
   }
 
   renderChartTMC(){
-    console.log('renderChartTMC:', this.tmcChartInfo);
-    console.log('renderChartTMC',this.tmcChartInfo['labels']);
+    //console.log('renderChartTMC:', this.tmcChartInfo);
+    //console.log('renderChartTMC',this.tmcChartInfo['labels']);
+    this.tmcChart['data']['datasets'] = [];
     //ahora los datos en la forma del chart
     for(let i=0; i<this.tmcChartInfo['type'].length; i++){
       this.tmcChart['data']['datasets'].push([]);
-      this.tmcChart['data']['datasets'][i] = {data: this.tmcChartInfo['data'][i],
-      label: this.tmcChartInfo['type'][i], 
-      fill: false,};
-
+      this.tmcChart['data']['datasets'][i] = {
+        data: this.tmcChartInfo['data'][i],
+        label: this.tmcChartInfo['type'][i],//+ TMCtypes.default.find( tmc => tmc.id ===  this.tmcChartInfo['type'][i]).description, 
+        fill: false,
+      };
+     
     }
+    this.tmcChart['data']['datasets'].push([]);
+    this.tmcChart['data']['datasets'][this.tmcChartInfo['type'].length] = {
+      data: this.tmcMaxValues,
+      label: 'Max values'
+    };
     this.tmcChart['data']['labels'] = this.tmcChartInfo['labels'];
 
     console.log(this.tmcChart);
@@ -354,7 +380,5 @@ export class AppComponent implements OnInit {
     let myLineChart = new Chart(this.tmcChartElement, this.tmcChart);
 
   }
-
-
 
 }

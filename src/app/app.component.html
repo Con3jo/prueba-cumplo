@@ -2,7 +2,7 @@
 <nav class="navbar navbar-default navbar-fixed-top header-cumplo">
   <div class="container">
 
-    <h1>SBIF Indicators Charts</h1>
+    <h1>SBIF Indexes Charts</h1>
   </div>
 </nav>
 <div class="container">
@@ -55,10 +55,18 @@
           <p>Pick a date range to display</p>
           <ngbd-datepicker-range (changeDate)="updateDatesRangeTMC($event)"></ngbd-datepicker-range>
       </div>
-      <div class="col-md-7">
+      <div class="col-md-9">
         <div class="row">
         <canvas id="tmcChart" width="600" height="400"></canvas>
         </div>
+      </div>
+      <div class="col-md-12">
+        
+        <ul class="list-group">
+          <li *ngFor="let type of tmcTypes" class="list-group-item">
+            {{type.id}} : {{type.description}}
+          </li>
+        </ul>
       </div>
 
   </div>
