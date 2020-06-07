@@ -31,8 +31,12 @@
     "rxjs-compat": "~6.3.3",
     "serialize-javascript": "^3.1.0",
     "tslib": "^1.10.0",
+<<<<<<< HEAD
     "websocket-extensions": "^0.1.4",
     "yarn": "^1.16.0",
+=======
+    "yarn": "^1.22.0",
+>>>>>>> d98945e42cd1e68f1ae04645f14d889c9b7f020b
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
