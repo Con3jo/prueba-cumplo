@@ -27,6 +27,7 @@
     "bootstrap": "^4.3.1",
     "chart.js": "^2.8.0",
     "core-js": "^2.6.9",
+    "kind-of": "^6.0.3",
     "rxjs": "~6.3.3",
     "rxjs-compat": "~6.3.3",
     "serialize-javascript": "^3.1.0",
